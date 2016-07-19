@@ -20,8 +20,31 @@ object hayashi2zuknow {
   def read(kouNNN: File): List[Problem] = {
     println(kouNNN)
     val source = Source.fromFile(kouNNN, "MS932")
-    val ret = source.getLines().takeWhile(p => !p.startsWith("ポジション"))
+    val ret = pack(source.getLines().toList)
+      .filter(x => x(2).startsWith("           X to play"))
+      .map(prombel)
     ret.foreach(println)
     List()
+  }
+
+  def pack(lines: List[String]): List[List[String]] = {
+    if (lines.isEmpty) List(List())
+    //val (packed, next) = lines span { p => !p.startsWith("           X to play") }
+    val (packed, next) = lines span { p => !p.startsWith("ポジション") }
+    if (next == Nil || next.size == 1) {
+      List(packed)
+    } else {
+      packed :: pack(next.head.replaceAll("ポジション", "") :: next.tail)
+    }
+  }
+
+  def prombel(line: List[String]) = {
+    val pattern = ".*MAIL(.*)$".r
+    val id = line.head match {
+      case pattern(num) => Some(num)
+      case _ => None
+    }
+    println(id)
+    line
   }
 }
